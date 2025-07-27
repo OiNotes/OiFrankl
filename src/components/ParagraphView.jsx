@@ -62,7 +62,12 @@ export const ParagraphView = ({ paragraph, viewMode, isLiked, onToggleLike, swip
             fill={isLikedByUser ? 'currentColor' : 'none'}
             stroke="currentColor"
             strokeWidth="2"
-            whileTap={{ scale: 1.2 }}
+            whileTap={{ scale: 1.4 }}
+            animate={isLikedByUser ? {
+              scale: [1, 1.3, 1],
+              rotate: [0, -5, 5, 0],
+            } : {}}
+            transition={{ duration: 0.3 }}
           >
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
           </motion.svg>

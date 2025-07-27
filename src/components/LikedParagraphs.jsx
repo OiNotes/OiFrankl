@@ -1,9 +1,9 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useProgress } from '../hooks/useProgress';
+import { useSupabaseProgress } from '../hooks/useSupabaseProgress';
 import { contentFull } from '../data/contentFull';
 
 export const LikedParagraphs = ({ userKey, onClose, onNavigateTo }) => {
-  const { progress } = useProgress(userKey);
+  const { progress } = useSupabaseProgress(userKey);
   const likedParagraphs = contentFull.filter(p => progress.likes.includes(p.id));
 
   return (

@@ -210,11 +210,32 @@ export const Reader = ({ userKey, onLogout }) => {
           onClick={async () => {
             if (showKey) {
               try {
-                await navigator.clipboard.writeText(userKey);
+                // Для мобильных устройств используем альтернативный метод
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                  await navigator.clipboard.writeText(userKey);
+                } else {
+                  // Fallback для старых браузеров
+                  const textArea = document.createElement('textarea');
+                  textArea.value = userKey;
+                  textArea.style.position = 'fixed';
+                  textArea.style.left = '-999999px';
+                  document.body.appendChild(textArea);
+                  textArea.focus();
+                  textArea.select();
+                  document.execCommand('copy');
+                  document.body.removeChild(textArea);
+                }
+                
                 setCopiedKey(true);
+                // Вибрация на мобильных при успешном копировании
+                if ('vibrate' in navigator) {
+                  navigator.vibrate(50);
+                }
                 setTimeout(() => setCopiedKey(false), 2000);
               } catch (err) {
                 console.error('Failed to copy:', err);
+                // Показываем ключ если не удалось скопировать
+                alert(`Ваш ключ: ${userKey}`);
               }
             } else {
               setShowKey(true);
@@ -222,7 +243,7 @@ export const Reader = ({ userKey, onLogout }) => {
           }}
           className="text-xs font-mono text-text-secondary/60 hover:text-text-secondary transition-colors"
         >
-          {showKey ? (copiedKey ? 'Скопировано!' : userKey) : 'Показать ключ'}
+          {showKey ? (copiedKey ? '✓ Скопировано!' : userKey) : 'Показать ключ'}
         </button>
       </div>
 
