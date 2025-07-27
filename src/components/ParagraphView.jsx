@@ -37,15 +37,15 @@ export const ParagraphView = ({ paragraph, viewMode, isLiked, onToggleLike, swip
   return (
     <div className="w-full h-full flex flex-col">
       <div className={`flex-1 flex items-center justify-center ${mobileOptimized.padding} py-8 ${isVeryLong ? 'overflow-y-auto' : ''}`} {...swipeHandlers}>
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence mode="wait">
           <motion.div
             key={viewMode}
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.97 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ 
-              duration: 0.15, 
-              ease: [0.32, 0, 0.67, 0]
+              duration: 0.2, 
+              ease: 'easeInOut'
             }}
             className="w-full max-w-2xl"
             style={{ transform: `scale(${mobileOptimized.scale})` }}

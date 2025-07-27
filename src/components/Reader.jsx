@@ -105,21 +105,15 @@ export const Reader = ({ userKey, onLogout }) => {
   }, [handleSwipeUp, handleSwipeDown, handleTap]);
 
   const slideVariants = {
-    enter: (direction) => ({
-      y: direction > 0 ? '15%' : '-15%',
-      opacity: 0.4,
-      scale: 0.95
-    }),
-    center: {
-      y: 0,
-      opacity: 1,
-      scale: 1
+    enter: {
+      opacity: 0
     },
-    exit: (direction) => ({
-      y: direction > 0 ? '-15%' : '15%',
-      opacity: 0.4,
-      scale: 0.95
-    }),
+    center: {
+      opacity: 1
+    },
+    exit: {
+      opacity: 0
+    }
   };
 
   return (
@@ -127,7 +121,7 @@ export const Reader = ({ userKey, onLogout }) => {
       <SyncIndicator syncStatus={syncStatus} />
       <Progress current={progress.currentIndex + 1} total={contentFull.length} />
       
-      <AnimatePresence mode="popLayout" custom={direction}>
+      <AnimatePresence mode="wait">
         <motion.div
           key={progress.currentIndex}
           custom={direction}
@@ -136,18 +130,9 @@ export const Reader = ({ userKey, onLogout }) => {
           animate="center"
           exit="exit"
           transition={{
-            y: { 
-              type: 'tween', 
-              duration: 0.2,
-              ease: [0.32, 0, 0.67, 0]
-            },
             opacity: { 
-              duration: 0.15,
-              ease: [0.4, 0, 0.2, 1]
-            },
-            scale: {
-              duration: 0.18,
-              ease: [0.32, 0, 0.67, 0]
+              duration: 0.3,
+              ease: 'easeInOut'
             }
           }}
           className="absolute inset-0"
