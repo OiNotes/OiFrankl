@@ -6,7 +6,7 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const useLocalStorage = import.meta.env.VITE_USE_LOCAL_STORAGE === 'true';
 
 // Проверяем наличие переменных и режим работы
-const isSupabaseConfigured = !useLocalStorage && supabaseUrl && supabaseAnonKey;
+const isSupabaseConfigured = supabaseUrl && supabaseAnonKey && !useLocalStorage;
 
 if (useLocalStorage) {
   console.log('[Storage] Используется локальное хранилище');
