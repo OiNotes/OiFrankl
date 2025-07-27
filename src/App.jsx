@@ -9,6 +9,19 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Отладка: проверяем localStorage при загрузке
+    console.log('=== DEBUG: Checking localStorage ===');
+    console.log('Global likes:', localStorage.getItem('frankl_global_likes'));
+    const allKeys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.includes('frankl')) {
+        allKeys.push(key);
+      }
+    }
+    console.log('All frankl keys:', allKeys);
+    console.log('=================================');
+    
     // Проверяем, есть ли сохраненная сессия
     const savedKey = storage.getUserKey();
     if (savedKey) {

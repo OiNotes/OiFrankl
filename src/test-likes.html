@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Likes</title>
+    <script>
+        const SUPABASE_URL = 'https://nfayxrcrzsdxlwpumnwb.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mYXl4cmNyenNkeGx3cHVtbndiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MDkyMDUsImV4cCI6MjA2OTE4NTIwNX0.ThWlkSh69luGZPLg_y9FOzc56qp3tvhHB8lUWhmeKvI';
+        
+        async function addTestLikes() {
+            // Создаем тестовые лайки для нескольких фрагментов
+            const testLikes = [
+                { user_id: 'test-user-1', fragment_id: 1 },
+                { user_id: 'test-user-2', fragment_id: 1 },
+                { user_id: 'test-user-3', fragment_id: 1 },
+                { user_id: 'test-user-1', fragment_id: 2 },
+                { user_id: 'test-user-2', fragment_id: 2 },
+                { user_id: 'test-user-3', fragment_id: 2 },
+                { user_id: 'test-user-4', fragment_id: 2 },
+                { user_id: 'test-user-5', fragment_id: 2 },
+                { user_id: 'test-user-1', fragment_id: 3 },
+                { user_id: 'test-user-2', fragment_id: 3 },
+                { user_id: 'test-user-3', fragment_id: 3 },
+                { user_id: 'test-user-4', fragment_id: 3 },
+                { user_id: 'test-user-5', fragment_id: 3 },
+                { user_id: 'test-user-6', fragment_id: 3 },
+                { user_id: 'test-user-7', fragment_id: 3 },
+            ];
+            
+            for (const like of testLikes) {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/user_likes`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify(like)
+                });
+                
+                console.log(`Added like for fragment ${like.fragment_id} by ${like.user_id}:`, response.status);
+            }
+            
+            console.log('Test likes added!');
+        }
+        
+        async function checkLikes() {
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/user_likes?select=*`, {
+                headers: {
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                }
+            });
+            
+            const data = await response.json();
+            console.log('Current likes:', data);
+        }
+    </script>
+</head>
+<body>
+    <h1>Test Likes for Frankl Reader</h1>
+    <button onclick="addTestLikes()">Add Test Likes</button>
+    <button onclick="checkLikes()">Check Current Likes</button>
+    <p>Open console to see results</p>
+</body>
+</html>

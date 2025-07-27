@@ -143,11 +143,35 @@ export const migrationService = {
     // Удаляем старые данные
     localStorage.removeItem(`frankl_${userKey}`);
     localStorage.removeItem(`frankl_user_likes_${userKey}`);
+    localStorage.removeItem('frankl_global_likes'); // Удаляем старые глобальные лайки
     
     // Восстанавливаем флаг миграции
     if (migrationFlag) {
       localStorage.setItem(`frankl_migrated_${userKey}`, migrationFlag);
     }
+  },
+  
+  // Очистка всех старых данных из localStorage
+  cleanupOldData() {
+    // Удаляем старые глобальные лайки
+    if (localStorage.getItem('frankl_global_likes')) {
+      console.log('Removing old global likes from localStorage');
+      localStorage.removeItem('frankl_global_likes');
+    }
+    
+    // Удаляем старые пользовательские лайки
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('frankl_user_likes_')) {
+        keysToRemove.push(key);
+      }
+    }
+    
+    keysToRemove.forEach(key => {
+      console.log('Removing old user likes:', key);
+      localStorage.removeItem(key);
+    });
   },
 
   // Проверка состояния миграции

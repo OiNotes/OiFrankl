@@ -30,6 +30,9 @@ export const useSupabaseProgress = (userKey) => {
       setSyncStatus(prev => ({ ...prev, isMigrating: true }));
       
       try {
+        // Очищаем старые данные из localStorage
+        migrationService.cleanupOldData();
+        
         // Инициализируем хранилище
         await supabaseStorage.init(userKey);
         

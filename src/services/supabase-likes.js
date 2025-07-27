@@ -291,6 +291,7 @@ export const useSupabaseGlobalLikes = (fragmentId) => {
     // Загружаем начальные данные сразу
     supabaseLikesService.getLikesCount(fragmentId).then(count => {
       const isLikedByUser = supabaseLikesService.isLikedByUser(fragmentId);
+      console.log(`[useSupabaseGlobalLikes] Fragment ${fragmentId}: count=${count}, isLikedByUser=${isLikedByUser}`);
       setLikesData({ count, isLikedByUser });
     });
     
