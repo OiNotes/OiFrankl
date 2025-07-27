@@ -7,6 +7,10 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 // Проверяем наличие переменных
 const isSupabaseConfigured = supabaseUrl && supabaseAnonKey;
 
+console.log('[Supabase Config] URL:', supabaseUrl ? 'present' : 'missing');
+console.log('[Supabase Config] Anon Key:', supabaseAnonKey ? 'present' : 'missing');
+console.log('[Supabase Config] Configured:', isSupabaseConfigured);
+
 // Создаем клиент только если есть конфигурация
 export const supabase = isSupabaseConfigured 
   ? createClient(supabaseUrl, supabaseAnonKey)
@@ -17,29 +21,48 @@ export const useSupabase = isSupabaseConfigured;
 
 // Вспомогательные функции для миграции
 export const migrateUserToSupabase = async (userKey) => {
-  if (!supabase) return null;
+  if (!supabase) {
+    console.log('[migrateUserToSupabase] No Supabase client');
+    return null;
+  }
+  
+  console.log('[migrateUserToSupabase] Checking/creating user for key:', userKey);
   
   try {
     // Проверяем, существует ли пользователь
-    const { data: existingUser } = await supabase
+    const { data: existingUser, error: selectError } = await supabase
       .from('users')
       .select('id')
       .eq('user_key', userKey)
       .single();
     
-    if (existingUser) return existingUser.id;
+    if (existingUser) {
+      console.log('[migrateUserToSupabase] Found existing user:', existingUser.id);
+      return existingUser.id;
+    }
+    
+    // Если ошибка не "PGRST116" (not found), то это реальная ошибка
+    if (selectError && selectError.code !== 'PGRST116') {
+      console.error('[migrateUserToSupabase] Error selecting user:', selectError);
+      throw selectError;
+    }
     
     // Создаем нового пользователя
-    const { data: newUser, error } = await supabase
+    const { data: newUser, error: insertError } = await supabase
       .from('users')
       .insert({ user_key: userKey })
       .select('id')
       .single();
     
-    if (error) throw error;
+    if (insertError) {
+      console.error('[migrateUserToSupabase] Error creating user:', insertError);
+      throw insertError;
+    }
+    
+    console.log('[migrateUserToSupabase] Created new user:', newUser.id);
     return newUser.id;
   } catch (error) {
-    console.error('Error migrating user:', error);
+    console.error('[migrateUserToSupabase] Error migrating user:', error);
     return null;
   }
 };

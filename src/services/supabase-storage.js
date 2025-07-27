@@ -21,9 +21,12 @@ class SupabaseStorage {
     if (supabase && this.isOnline) {
       try {
         this.userId = await migrateUserToSupabase(userKey);
+        console.log('[supabaseStorage.init] User migrated/found in Supabase. userId:', this.userId);
       } catch (error) {
         console.error('Failed to migrate user to Supabase:', error);
       }
+    } else {
+      console.log('[supabaseStorage.init] No Supabase or offline. supabase:', !!supabase, 'isOnline:', this.isOnline);
     }
   }
 

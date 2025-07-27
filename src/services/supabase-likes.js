@@ -21,9 +21,11 @@ class SupabaseLikesService {
     localLikesService.init(userKey);
     
     if (!supabase || !userId) {
-      console.log('Using local likes service as fallback');
+      console.log('[supabaseLikesService.init] Using local likes service as fallback. supabase:', !!supabase, 'userId:', userId);
       return;
     }
+    
+    console.log('[supabaseLikesService.init] Initialized with userKey:', userKey, 'userId:', userId);
     
     // Загружаем лайки пользователя
     await this.loadUserLikes();
@@ -150,6 +152,8 @@ class SupabaseLikesService {
     
     const isLiked = this.isLikedByUser(fragmentId);
     
+    console.log(`[toggleLike] Fragment ${fragmentId}, isLiked: ${isLiked}, userId: ${this.userId}`);
+    
     try {
       if (isLiked) {
         // Удаляем лайк
@@ -159,7 +163,11 @@ class SupabaseLikesService {
           .eq('user_id', this.userId)
           .eq('fragment_id', fragmentId);
         
-        if (error) throw error;
+        if (error) {
+          console.error('[toggleLike] Error deleting like:', error);
+          throw error;
+        }
+        console.log(`[toggleLike] Successfully deleted like for fragment ${fragmentId}`);
         
         // Обновляем локальный кеш
         this.userLikesCache.delete(fragmentId);
@@ -172,7 +180,11 @@ class SupabaseLikesService {
             fragment_id: fragmentId
           });
         
-        if (error) throw error;
+        if (error) {
+          console.error('[toggleLike] Error inserting like:', error);
+          throw error;
+        }
+        console.log(`[toggleLike] Successfully added like for fragment ${fragmentId}`);
         
         // Обновляем локальный кеш
         this.userLikesCache.add(fragmentId);
