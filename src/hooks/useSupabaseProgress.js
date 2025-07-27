@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabaseStorage } from '../services/supabase-storage';
-import { supabaseLikesService } from '../services/supabase-likes';
+import { supabaseLikesService } from '../services/supabase-likes-optimized';
 import { migrationService } from '../services/migration';
 import { migrateUserToSupabase } from '../config/supabase';
 

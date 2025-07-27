@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { enhancedLocalStorage } from '../services/enhanced-local-storage';
-import { useSupabaseGlobalLikes } from '../services/supabase-likes';
+import { useSupabaseGlobalLikes } from '../services/supabase-likes-optimized';
 
 // Проверяем режим работы
 const useLocalMode = import.meta.env.VITE_USE_LOCAL_STORAGE === 'true';
