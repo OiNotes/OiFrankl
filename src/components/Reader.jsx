@@ -47,6 +47,12 @@ export const Reader = ({ userKey, onLogout }) => {
     setDirection(1);
     setIsTransitioning(true);
     updateIndex(progress.currentIndex + 1);
+    
+    // Если был в режиме аналогии, переключаем на оригинал
+    if (progress.viewMode === 'analogy') {
+      toggleViewMode();
+    }
+    
     // Легкая вибрация при переключении
     if ('vibrate' in navigator) {
       navigator.vibrate(10);
@@ -55,7 +61,7 @@ export const Reader = ({ userKey, onLogout }) => {
     requestAnimationFrame(() => {
       setIsTransitioning(false);
     });
-  }, [progress.currentIndex, updateIndex, isTransitioning]);
+  }, [progress.currentIndex, updateIndex, isTransitioning, progress.viewMode, toggleViewMode]);
 
   const handleSwipeDown = useCallback(() => {
     if (isTransitioning || progress.currentIndex <= 0) {
@@ -69,6 +75,12 @@ export const Reader = ({ userKey, onLogout }) => {
     setDirection(-1);
     setIsTransitioning(true);
     updateIndex(progress.currentIndex - 1);
+    
+    // Если был в режиме аналогии, переключаем на оригинал
+    if (progress.viewMode === 'analogy') {
+      toggleViewMode();
+    }
+    
     // Легкая вибрация при переключении
     if ('vibrate' in navigator) {
       navigator.vibrate(10);
@@ -77,7 +89,7 @@ export const Reader = ({ userKey, onLogout }) => {
     requestAnimationFrame(() => {
       setIsTransitioning(false);
     });
-  }, [progress.currentIndex, updateIndex, isTransitioning]);
+  }, [progress.currentIndex, updateIndex, isTransitioning, progress.viewMode, toggleViewMode]);
 
   const handleTap = useCallback(() => {
     toggleViewMode();
