@@ -62,7 +62,7 @@ class SupabaseStorage {
 
   // Получение прогресса с fallback
   async getProgress(userKey) {
-    // Сначала возвращаем локальные данные для быстрого отклика
+    // Сначала загружаем локальные данные для быстрого отклика
     const localProgress = localStorageService.getProgress(userKey);
     
     // Если есть Supabase и соединение, пытаемся получить свежие данные
@@ -82,19 +82,34 @@ class SupabaseStorage {
             lastRead: new Date(data.last_read).getTime(),
             totalRead: data.total_read,
             readFragments: data.read_fragments || [],
-            likes: await this.getUserLikes() // Получаем лайки отдельно
+            likes: await this.getUserLikes() // Получаем лайки отдельно из Supabase
           };
           
           // Сохраняем в localStorage для кеширования
           localStorageService.saveProgress(userKey, remoteProgress);
           return remoteProgress;
+        } else {
+          // Если пользователь новый в Supabase, создаем чистый прогресс
+          console.log('No data in Supabase for user, creating fresh progress');
+          const freshProgress = {
+            ...localProgress,
+            likes: [] // Очищаем старые локальные лайки
+          };
+          
+          // Сохраняем чистый прогресс
+          localStorageService.saveProgress(userKey, freshProgress);
+          return freshProgress;
         }
       } catch (error) {
         console.error('Failed to fetch progress from Supabase:', error);
       }
     }
     
-    return localProgress;
+    // Для оффлайн режима очищаем лайки из старых данных
+    return {
+      ...localProgress,
+      likes: [] // Не загружаем старые локальные лайки
+    };
   }
 
   // Сохранение прогресса с retry логикой
@@ -168,6 +183,9 @@ class SupabaseStorage {
         
         console.log('Converted to local IDs:', localIds);
         return localIds;
+      } else {
+        console.log('No user likes found in Supabase for user:', this.userId);
+        return [];
       }
     } catch (error) {
       console.error('Failed to fetch user likes:', error);

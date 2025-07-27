@@ -45,6 +45,7 @@ class SupabaseLikesService {
       if (!error && data) {
         this.userLikesCache = new Set(data.map(item => item.fragment_id));
         console.log('Loaded user likes:', this.userLikesCache.size, 'likes for user:', this.userId);
+        console.log('User likes fragments:', Array.from(this.userLikesCache));
       }
     } catch (error) {
       console.error('Failed to load user likes:', error);
@@ -118,8 +119,11 @@ class SupabaseLikesService {
         .eq('fragment_id', fragmentId);
       
       if (!error && count !== null) {
+        console.log(`[getLikesCount] Fragment ${fragmentId}: found ${count} likes in Supabase`);
         this.likesCache.set(fragmentId, count);
         return count;
+      } else {
+        console.log(`[getLikesCount] Fragment ${fragmentId}: no likes found or error:`, error);
       }
     } catch (error) {
       console.error('Failed to get likes count:', error);

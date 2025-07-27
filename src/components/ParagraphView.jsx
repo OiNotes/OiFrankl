@@ -20,8 +20,8 @@ export const ParagraphView = ({ paragraph, viewMode, isLiked, onToggleLike, swip
     setOptimisticCount(globalLikes);
     
     // Отладка для проверки глобальных лайков
-    if (globalLikes > 0) {
-      console.log(`Fragment ${paragraph.id} (globalId: ${validGlobalId}) has ${globalLikes} likes`);
+    if (validGlobalId) {
+      console.log(`[ParagraphView] Fragment ${paragraph.id} (globalId: ${validGlobalId}): ${globalLikes} likes, isLikedByUser: ${isLikedByUser}`);
     }
   }, [isLikedByUser, globalLikes, paragraph.id, validGlobalId]);
   

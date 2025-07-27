@@ -21,6 +21,25 @@ function App() {
     }
     console.log('All frankl keys:', allKeys);
     console.log('=================================');
+    console.log('💡 Чтобы добавить тестовые лайки:');
+    console.log('1. Откройте /src/test-likes.html в браузере');
+    console.log('2. Нажмите "Add Test Likes"');
+    console.log('3. Перезагрузите приложение');
+    console.log('=================================');
+    
+    // Одноразовая очистка старых данных
+    if (localStorage.getItem('frankl_cleaned_v2') !== 'true') {
+      console.log('🧹 Очищаем старые данные...');
+      // Очищаем все ключи с frankl_user_likes_
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('frankl_user_likes_') || key === 'frankl_global_likes')) {
+          console.log('Удаляем:', key);
+          localStorage.removeItem(key);
+        }
+      }
+      localStorage.setItem('frankl_cleaned_v2', 'true');
+    }
     
     // Проверяем, есть ли сохраненная сессия
     const savedKey = storage.getUserKey();
