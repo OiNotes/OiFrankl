@@ -44,10 +44,20 @@ class SupabaseLikesService {
         .select('fragment_id')
         .eq('user_id', this.userId);
       
-      if (!error && data) {
+      if (error) {
+        console.error('Error loading user likes:', error);
+        return;
+      }
+      
+      if (data) {
         this.userLikesCache = new Set(data.map(item => item.fragment_id));
         console.log('Loaded user likes:', this.userLikesCache.size, 'likes for user:', this.userId);
         console.log('User likes fragments:', Array.from(this.userLikesCache));
+        
+        // Уведомляем все подписанные компоненты об обновлении
+        for (const fragmentId of this.userLikesCache) {
+          this.notifyListeners(fragmentId);
+        }
       }
     } catch (error) {
       console.error('Failed to load user likes:', error);
