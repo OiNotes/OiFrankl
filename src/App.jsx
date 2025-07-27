@@ -9,9 +9,16 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Отладка: проверяем localStorage при загрузке
-    console.log('=== DEBUG: Checking localStorage ===');
-    console.log('Global likes:', localStorage.getItem('frankl_global_likes'));
+    // Отладка: проверяем режим работы и переменные окружения
+    console.log('=== DEBUG: App Configuration ===');
+    console.log('🔧 Режим работы:');
+    console.log('  VITE_USE_LOCAL_STORAGE:', import.meta.env.VITE_USE_LOCAL_STORAGE);
+    console.log('  Используется локальное хранилище:', import.meta.env.VITE_USE_LOCAL_STORAGE === 'true');
+    console.log('  VITE_SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL ? '✅ Установлен' : '❌ Не установлен');
+    console.log('  VITE_SUPABASE_ANON_KEY:', import.meta.env.VITE_SUPABASE_ANON_KEY ? '✅ Установлен' : '❌ Не установлен');
+    console.log('');
+    console.log('📦 LocalStorage:');
+    console.log('  Global likes:', localStorage.getItem('frankl_global_likes'));
     const allKeys = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
@@ -19,12 +26,7 @@ function App() {
         allKeys.push(key);
       }
     }
-    console.log('All frankl keys:', allKeys);
-    console.log('=================================');
-    console.log('💡 Чтобы добавить тестовые лайки:');
-    console.log('1. Откройте /src/test-likes.html в браузере');
-    console.log('2. Нажмите "Add Test Likes"');
-    console.log('3. Перезагрузите приложение');
+    console.log('  All frankl keys:', allKeys);
     console.log('=================================');
     
     // Одноразовая очистка старых данных

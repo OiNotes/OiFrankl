@@ -303,9 +303,13 @@ export const useSupabaseGlobalLikes = (fragmentId) => {
     isLikedByUser: false
   });
 
+  console.log('[useSupabaseGlobalLikes] Hook вызван для fragmentId:', fragmentId);
+  console.log('[useSupabaseGlobalLikes] supabaseLikesService userId:', supabaseLikesService.userId);
+
   useEffect(() => {
     // Если нет валидного fragmentId, возвращаем пустые данные
     if (!fragmentId || fragmentId <= 0) {
+      console.log('[useSupabaseGlobalLikes] Пропускаем - невалидный fragmentId:', fragmentId);
       setLikesData({ count: 0, isLikedByUser: false });
       return;
     }
@@ -324,8 +328,11 @@ export const useSupabaseGlobalLikes = (fragmentId) => {
   }, [fragmentId]);
 
   const toggleLike = async () => {
+    console.log('[useSupabaseGlobalLikes] toggleLike вызван для fragmentId:', fragmentId);
     if (fragmentId && fragmentId > 0) {
       await supabaseLikesService.toggleLike(fragmentId);
+    } else {
+      console.warn('[useSupabaseGlobalLikes] toggleLike пропущен - невалидный fragmentId:', fragmentId);
     }
   };
 
