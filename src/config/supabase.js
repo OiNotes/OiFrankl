@@ -76,7 +76,7 @@ export const migrateUserToSupabase = async (userKey) => {
       .from('users')
       .select('id')
       .eq('user_key', userKey)
-      .single();
+      .maybeSingle(); // Используем maybeSingle вместо single
     
     console.log('[migrateUserToSupabase] Response:', {
       status,
@@ -90,19 +90,9 @@ export const migrateUserToSupabase = async (userKey) => {
       return existingUser.id;
     }
     
-    // Если ошибка не "PGRST116" (not found), то это реальная ошибка
-    if (selectError && selectError.code !== 'PGRST116') {
+    // Если есть ошибка, но это не ошибка "не найдено", выбрасываем её
+    if (selectError) {
       console.error('[migrateUserToSupabase] Error selecting user:', selectError);
-      console.error('[migrateUserToSupabase] Error details:', {
-        message: selectError.message,
-        code: selectError.code,
-        details: selectError.details,
-        hint: selectError.hint,
-        status: selectError.status,
-        statusText: selectError.statusText
-      });
-      // Детальный вывод для отладки
-      console.error('[migrateUserToSupabase] Full error object:', JSON.stringify(selectError, null, 2));
       throw selectError;
     }
     
