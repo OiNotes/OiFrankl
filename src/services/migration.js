@@ -21,7 +21,8 @@ export const migrationService = {
     try {
       // Получаем локальные данные
       const localProgress = JSON.parse(localStorage.getItem(`frankl_${userKey}`) || '{}');
-      const localLikes = JSON.parse(localStorage.getItem(`frankl_user_likes_${userKey}`) || '[]');
+      // Берем лайки из прогресса, а не из отдельного ключа
+      const localLikes = localProgress.likes || [];
       
       // Мигрируем прогресс чтения
       if (localProgress.currentIndex !== undefined) {
@@ -46,25 +47,31 @@ export const migrationService = {
 
       // Мигрируем лайки пользователя
       if (localLikes.length > 0) {
+        console.log('Migrating user likes:', localLikes.length, 'likes for user:', userId);
+        
         // Сначала удаляем существующие лайки (на случай повторной миграции)
         await supabase
           .from('user_likes')
           .delete()
           .eq('user_id', userId);
 
-        // Добавляем новые лайки
-        const likesToInsert = localLikes.map(fragmentId => ({
-          user_id: userId,
-          fragment_id: fragmentId
-        }));
+        // Добавляем новые лайки, фильтруя только валидные ID
+        const likesToInsert = localLikes
+          .filter(fragmentId => fragmentId && fragmentId > 0)
+          .map(fragmentId => ({
+            user_id: userId,
+            fragment_id: fragmentId
+          }));
 
-        const { error: likesError } = await supabase
-          .from('user_likes')
-          .insert(likesToInsert);
+        if (likesToInsert.length > 0) {
+          const { error: likesError } = await supabase
+            .from('user_likes')
+            .insert(likesToInsert);
 
-        if (likesError) {
-          console.error('Failed to migrate likes:', likesError);
-          throw likesError;
+          if (likesError) {
+            console.error('Failed to migrate likes:', likesError);
+            throw likesError;
+          }
         }
       }
 

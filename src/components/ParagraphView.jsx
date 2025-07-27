@@ -6,7 +6,9 @@ import { useSupabaseGlobalLikes } from '../services/supabase-likes';
 export const ParagraphView = ({ paragraph, viewMode, isLiked, onToggleLike, swipeHandlers }) => {
   const text = viewMode === 'original' ? paragraph.original : paragraph.analogy;
   const { fontSize, lineHeight, isVeryLong, mobileOptimized } = useTextSize(text);
-  const { count: globalLikes, isLikedByUser, toggleLike } = useSupabaseGlobalLikes(paragraph.globalId || 0);
+  // Используем globalId только если он есть и больше 0
+  const validGlobalId = paragraph.globalId && paragraph.globalId > 0 ? paragraph.globalId : null;
+  const { count: globalLikes, isLikedByUser, toggleLike } = useSupabaseGlobalLikes(validGlobalId);
   const [optimisticLiked, setOptimisticLiked] = useState(isLikedByUser);
   const [optimisticCount, setOptimisticCount] = useState(globalLikes);
 

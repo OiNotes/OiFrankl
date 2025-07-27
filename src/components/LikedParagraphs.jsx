@@ -4,7 +4,8 @@ import { contentFull } from '../data/contentFull';
 
 export const LikedParagraphs = ({ userKey, onClose, onNavigateTo }) => {
   const { progress } = useSupabaseProgress(userKey);
-  const likedParagraphs = contentFull.filter(p => progress.likes.includes(p.id));
+  // Используем только те лайки, которые есть в progress.likes (загруженные из Supabase для конкретного пользователя)
+  const likedParagraphs = contentFull.filter(p => progress.likes && progress.likes.includes(p.id));
 
   return (
     <motion.div

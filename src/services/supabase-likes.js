@@ -44,6 +44,7 @@ class SupabaseLikesService {
       
       if (!error && data) {
         this.userLikesCache = new Set(data.map(item => item.fragment_id));
+        console.log('Loaded user likes:', this.userLikesCache.size, 'likes for user:', this.userId);
       }
     } catch (error) {
       console.error('Failed to load user likes:', error);
@@ -187,6 +188,11 @@ class SupabaseLikesService {
 
   // Подписаться на изменения лайков конкретного фрагмента
   subscribe(fragmentId, callback) {
+    // Если нет валидного fragmentId, возвращаем пустую функцию отписки
+    if (!fragmentId || fragmentId <= 0) {
+      return () => {};
+    }
+    
     if (!this.listeners.has(fragmentId)) {
       this.listeners.set(fragmentId, new Set());
     }
@@ -269,6 +275,18 @@ export const useSupabaseGlobalLikes = (fragmentId) => {
   });
 
   useEffect(() => {
+    // Если нет валидного fragmentId, возвращаем пустые данные
+    if (!fragmentId || fragmentId <= 0) {
+      setLikesData({ count: 0, isLikedByUser: false });
+      return;
+    }
+    
+    // Загружаем начальные данные сразу
+    supabaseLikesService.getLikesCount(fragmentId).then(count => {
+      const isLikedByUser = supabaseLikesService.isLikedByUser(fragmentId);
+      setLikesData({ count, isLikedByUser });
+    });
+    
     // Подписываемся на изменения
     const unsubscribe = supabaseLikesService.subscribe(fragmentId, setLikesData);
     
@@ -276,7 +294,9 @@ export const useSupabaseGlobalLikes = (fragmentId) => {
   }, [fragmentId]);
 
   const toggleLike = async () => {
-    await supabaseLikesService.toggleLike(fragmentId);
+    if (fragmentId && fragmentId > 0) {
+      await supabaseLikesService.toggleLike(fragmentId);
+    }
   };
 
   return { ...likesData, toggleLike };

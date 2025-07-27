@@ -41,11 +41,12 @@ export const useSupabaseProgress = (userKey) => {
           await migrationService.migrateUserData(userKey, supabaseStorage.userId);
         }
         
-        // Инициализируем сервис лайков
+        // Инициализируем сервис лайков ПОСЛЕ миграции
         await supabaseLikesService.init(userKey, supabaseStorage.userId);
         
-        // Загружаем прогресс
+        // Загружаем прогресс (включая лайки из Supabase)
         const loadedProgress = await supabaseStorage.getProgress(userKey);
+        console.log('Loaded progress with likes:', loadedProgress.likes?.length || 0);
         setProgress(loadedProgress);
       } catch (error) {
         console.error('Failed to initialize progress:', error);
@@ -114,7 +115,7 @@ export const useSupabaseProgress = (userKey) => {
 
   // Переключение лайка
   const toggleLike = useCallback(async (paragraphId) => {
-    // Обновляем локальный список лайков
+    // Обновляем локальный список лайков оптимистично
     setProgress(prev => {
       const likes = prev.likes.includes(paragraphId)
         ? prev.likes.filter(id => id !== paragraphId)
@@ -131,7 +132,7 @@ export const useSupabaseProgress = (userKey) => {
       return newProgress;
     });
     
-    // Обновляем глобальный лайк через Supabase
+    // Обновляем лайк в Supabase (user_likes таблица)
     await supabaseStorage.toggleLike(paragraphId);
   }, [userKey]);
 

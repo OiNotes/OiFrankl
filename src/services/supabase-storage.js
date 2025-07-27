@@ -155,6 +155,7 @@ class SupabaseStorage {
         .eq('user_id', this.userId);
       
       if (!error && data) {
+        console.log('Fetched user likes:', data.length, 'likes for user:', this.userId);
         return data.map(item => item.fragment_id);
       }
     } catch (error) {
