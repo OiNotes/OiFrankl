@@ -47,6 +47,10 @@ export const Reader = ({ userKey, onLogout }) => {
     setDirection(1);
     setIsTransitioning(true);
     updateIndex(progress.currentIndex + 1);
+    // Легкая вибрация при переключении
+    if ('vibrate' in navigator) {
+      navigator.vibrate(10);
+    }
     // Сбрасываем флаг после начала анимации
     requestAnimationFrame(() => {
       setIsTransitioning(false);
@@ -65,6 +69,10 @@ export const Reader = ({ userKey, onLogout }) => {
     setDirection(-1);
     setIsTransitioning(true);
     updateIndex(progress.currentIndex - 1);
+    // Легкая вибрация при переключении
+    if ('vibrate' in navigator) {
+      navigator.vibrate(10);
+    }
     // Сбрасываем флаг после начала анимации
     requestAnimationFrame(() => {
       setIsTransitioning(false);
@@ -98,19 +106,22 @@ export const Reader = ({ userKey, onLogout }) => {
 
   const slideVariants = {
     enter: (direction) => ({
-      y: direction > 0 ? '50%' : '-50%',
-      opacity: 0.3,
-      scale: 0.95
+      y: direction > 0 ? '25%' : '-25%',
+      opacity: 0.7,
+      scale: 0.98,
+      filter: 'blur(4px)'
     }),
     center: {
       y: 0,
       opacity: 1,
-      scale: 1
+      scale: 1,
+      filter: 'blur(0px)'
     },
     exit: (direction) => ({
-      y: direction > 0 ? '-30%' : '30%',
-      opacity: 0,
-      scale: 0.95
+      y: direction > 0 ? '-20%' : '20%',
+      opacity: 0.3,
+      scale: 0.98,
+      filter: 'blur(3px)'
     }),
   };
 
@@ -130,16 +141,20 @@ export const Reader = ({ userKey, onLogout }) => {
           transition={{
             y: { 
               type: 'tween', 
-              duration: 0.18,
-              ease: [0.32, 0, 0.67, 0] // ease-out для быстрого старта
+              duration: 0.25,
+              ease: [0.25, 0.1, 0.25, 1] // более плавная кривая
             },
             opacity: { 
-              duration: 0.08,
-              ease: 'linear'
+              duration: 0.15,
+              ease: [0.4, 0, 0.6, 1]
             },
             scale: {
-              duration: 0.15,
-              ease: [0.32, 0, 0.67, 0]
+              duration: 0.2,
+              ease: [0.25, 0.1, 0.25, 1]
+            },
+            filter: {
+              duration: 0.2,
+              ease: [0.4, 0, 0.6, 1]
             }
           }}
           className="absolute inset-0"

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTextSize } from '../hooks/useTextSize';
 import { useSupabaseGlobalLikes } from '../services/supabase-likes';
@@ -6,10 +7,29 @@ export const ParagraphView = ({ paragraph, viewMode, isLiked, onToggleLike, swip
   const text = viewMode === 'original' ? paragraph.original : paragraph.analogy;
   const { fontSize, lineHeight, isVeryLong, mobileOptimized } = useTextSize(text);
   const { count: globalLikes, isLikedByUser, toggleLike } = useSupabaseGlobalLikes(paragraph.globalId || 0);
+  const [optimisticLiked, setOptimisticLiked] = useState(isLikedByUser);
+  const [optimisticCount, setOptimisticCount] = useState(globalLikes);
 
   const isAnalogy = viewMode === 'analogy';
   
+  // Обновляем оптимистичные значения при изменении реальных
+  useEffect(() => {
+    setOptimisticLiked(isLikedByUser);
+    setOptimisticCount(globalLikes);
+  }, [isLikedByUser, globalLikes]);
+  
   const handleLikeClick = async () => {
+    // Оптимистичное обновление UI
+    const newLikedState = !optimisticLiked;
+    setOptimisticLiked(newLikedState);
+    setOptimisticCount(prev => newLikedState ? prev + 1 : Math.max(0, prev - 1));
+    
+    // Вибрация при лайке
+    if ('vibrate' in navigator) {
+      navigator.vibrate(30);
+    }
+    
+    // Реальное обновление
     await toggleLike();
     onToggleLike();
   };
@@ -20,12 +40,12 @@ export const ParagraphView = ({ paragraph, viewMode, isLiked, onToggleLike, swip
         <AnimatePresence mode="popLayout">
           <motion.div
             key={viewMode}
-            initial={{ opacity: 0, scale: 0.98, y: 5 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.98, y: -5 }}
+            initial={{ opacity: 0, scale: 0.99, filter: 'blur(2px)' }}
+            animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, scale: 0.99, filter: 'blur(2px)' }}
             transition={{ 
-              duration: 0.12, 
-              ease: [0.25, 0, 0.5, 1]
+              duration: 0.2, 
+              ease: [0.16, 1, 0.3, 1]
             }}
             className="w-full max-w-2xl"
             style={{ transform: `scale(${mobileOptimized.scale})` }}
@@ -59,11 +79,11 @@ export const ParagraphView = ({ paragraph, viewMode, isLiked, onToggleLike, swip
             width="24"
             height="24"
             viewBox="0 0 24 24"
-            fill={isLikedByUser ? 'currentColor' : 'none'}
+            fill={optimisticLiked ? 'currentColor' : 'none'}
             stroke="currentColor"
             strokeWidth="2"
             whileTap={{ scale: 1.4 }}
-            animate={isLikedByUser ? {
+            animate={optimisticLiked ? {
               scale: [1, 1.3, 1],
               rotate: [0, -5, 5, 0],
             } : {}}
@@ -71,14 +91,14 @@ export const ParagraphView = ({ paragraph, viewMode, isLiked, onToggleLike, swip
           >
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
           </motion.svg>
-          {globalLikes > 0 && (
+          {optimisticCount > 0 && (
             <motion.span 
               className="text-sm font-medium"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              key={globalLikes}
+              key={optimisticCount}
             >
-              {globalLikes}
+              {optimisticCount}
             </motion.span>
           )}
         </button>
