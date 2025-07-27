@@ -155,8 +155,19 @@ class SupabaseStorage {
         .eq('user_id', this.userId);
       
       if (!error && data) {
-        console.log('Fetched user likes:', data.length, 'likes for user:', this.userId);
-        return data.map(item => item.fragment_id);
+        console.log('Fetched user likes from Supabase:', data.length, 'likes for user:', this.userId);
+        
+        // Импортируем contentFull для конвертации globalId в id
+        const { contentFull } = await import('../data/contentFull');
+        
+        // Конвертируем fragment_id (globalId) в локальные id
+        const localIds = data.map(item => {
+          const fragment = contentFull.find(f => f.globalId === item.fragment_id);
+          return fragment ? fragment.id : null;
+        }).filter(id => id !== null);
+        
+        console.log('Converted to local IDs:', localIds);
+        return localIds;
       }
     } catch (error) {
       console.error('Failed to fetch user likes:', error);
@@ -175,13 +186,23 @@ class SupabaseStorage {
       return;
     }
     
+    // Получаем globalId для сохранения в Supabase
+    const { contentFull } = await import('../data/contentFull');
+    const fragment = contentFull.find(f => f.id === fragmentId);
+    if (!fragment || !fragment.globalId) {
+      console.error('Fragment not found or has no globalId:', fragmentId);
+      return;
+    }
+    
+    const globalId = fragment.globalId;
+    
     const toggleOperation = async () => {
       if (isLiked) {
         const { error } = await supabase
           .from('user_likes')
           .delete()
           .eq('user_id', this.userId)
-          .eq('fragment_id', fragmentId);
+          .eq('fragment_id', globalId); // Используем globalId
         
         if (error) throw error;
       } else {
@@ -189,7 +210,7 @@ class SupabaseStorage {
           .from('user_likes')
           .insert({
             user_id: this.userId,
-            fragment_id: fragmentId
+            fragment_id: globalId // Используем globalId
           });
         
         if (error) throw error;

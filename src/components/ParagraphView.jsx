@@ -18,7 +18,12 @@ export const ParagraphView = ({ paragraph, viewMode, isLiked, onToggleLike, swip
   useEffect(() => {
     setOptimisticLiked(isLikedByUser);
     setOptimisticCount(globalLikes);
-  }, [isLikedByUser, globalLikes]);
+    
+    // Отладка для проверки глобальных лайков
+    if (globalLikes > 0) {
+      console.log(`Fragment ${paragraph.id} (globalId: ${validGlobalId}) has ${globalLikes} likes`);
+    }
+  }, [isLikedByUser, globalLikes, paragraph.id, validGlobalId]);
   
   const handleLikeClick = async () => {
     // Оптимистичное обновление UI
@@ -32,8 +37,10 @@ export const ParagraphView = ({ paragraph, viewMode, isLiked, onToggleLike, swip
     }
     
     // Реальное обновление
-    await toggleLike();
-    onToggleLike();
+    if (validGlobalId) {
+      await toggleLike(); // Обновляет глобальные лайки через Supabase
+    }
+    onToggleLike(); // Обновляет локальный список лайков пользователя
   };
 
   return (

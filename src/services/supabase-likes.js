@@ -51,7 +51,7 @@ class SupabaseLikesService {
     }
   }
 
-  // Подписка на изменения глобальных лайков
+  // Подписка на изменения лайков
   subscribeToGlobalLikes() {
     if (!supabase) return;
     
@@ -60,33 +60,41 @@ class SupabaseLikesService {
       supabase.removeChannel(this.subscription);
     }
     
-    // Создаем новую подписку
+    // Создаем новую подписку на изменения в user_likes
     this.subscription = supabase
-      .channel('global_likes_changes')
+      .channel('user_likes_changes')
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'global_likes'
+          table: 'user_likes'
         },
         (payload) => {
-          this.handleGlobalLikesChange(payload);
+          this.handleUserLikesChange(payload);
         }
       )
       .subscribe();
   }
 
-  // Обработка изменений глобальных лайков
-  handleGlobalLikesChange(payload) {
+  // Обработка изменений лайков пользователей
+  handleUserLikesChange(payload) {
     const { eventType, new: newData, old: oldData } = payload;
     
-    if (eventType === 'INSERT' || eventType === 'UPDATE') {
-      this.likesCache.set(newData.fragment_id, newData.count);
-      this.notifyListeners(newData.fragment_id);
-    } else if (eventType === 'DELETE') {
-      this.likesCache.delete(oldData.fragment_id);
-      this.notifyListeners(oldData.fragment_id);
+    // При любом изменении сбрасываем кеш для этого фрагмента
+    const fragmentId = newData?.fragment_id || oldData?.fragment_id;
+    if (fragmentId) {
+      this.likesCache.delete(fragmentId);
+      
+      // Если это лайк текущего пользователя, обновляем кеш
+      if (eventType === 'INSERT' && newData.user_id === this.userId) {
+        this.userLikesCache.add(fragmentId);
+      } else if (eventType === 'DELETE' && oldData.user_id === this.userId) {
+        this.userLikesCache.delete(fragmentId);
+      }
+      
+      // Уведомляем слушателей
+      this.notifyListeners(fragmentId);
     }
   }
 
@@ -102,20 +110,19 @@ class SupabaseLikesService {
       return localLikesService.getLikesCount(fragmentId);
     }
     
-    // Загружаем из БД
+    // Подсчитываем количество лайков напрямую из user_likes
     try {
-      const { data, error } = await supabase
-        .from('global_likes')
-        .select('count')
-        .eq('fragment_id', fragmentId)
-        .single();
+      const { count, error } = await supabase
+        .from('user_likes')
+        .select('*', { count: 'exact', head: true })
+        .eq('fragment_id', fragmentId);
       
-      if (!error && data) {
-        this.likesCache.set(fragmentId, data.count);
-        return data.count;
+      if (!error && count !== null) {
+        this.likesCache.set(fragmentId, count);
+        return count;
       }
     } catch (error) {
-      // Игнорируем ошибку, если запись не найдена
+      console.error('Failed to get likes count:', error);
     }
     
     return 0;
