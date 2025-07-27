@@ -4,7 +4,7 @@ import { useTextSize } from '../hooks/useTextSize';
 import { useUnifiedLikes } from '../hooks/useUnifiedLikes';
 import { contentFull } from '../data/contentFull';
 
-export const ParagraphView = ({ paragraph, viewMode, isLiked, swipeHandlers, userKey }) => {
+export const ParagraphView = ({ paragraph, viewMode, isLiked, swipeHandlers, userKey, onToggleLike }) => {
   const text = viewMode === 'original' ? paragraph.original : paragraph.analogy;
   const { fontSize, lineHeight, isVeryLong, mobileOptimized } = useTextSize(text);
   // Используем унифицированный хук для лайков
@@ -38,9 +38,13 @@ export const ParagraphView = ({ paragraph, viewMode, isLiked, swipeHandlers, use
       navigator.vibrate(30);
     }
     
-    // Реальное обновление
-    await toggleLike(); // Обновляет лайки через унифицированный хук
-    // onToggleLike больше не нужен, так как toggleLike уже обновляет все
+    // Реальное обновление через родительский компонент
+    if (onToggleLike) {
+      await onToggleLike();
+    }
+    
+    // Также обновляем глобальные лайки
+    await toggleLike();
   };
 
   return (

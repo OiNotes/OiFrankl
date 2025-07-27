@@ -4,7 +4,7 @@
 
 1. Зайдите в панель управления Supabase: https://app.supabase.com/project/nfayxrcrzsdxlwpumnwb
 
-2. Перейдите в SQL Editor и выполните скрипт из файла `setup-supabase.sql`
+2. Перейдите в SQL Editor и выполните скрипт из файла `fix-global-likes.sql`
 
 3. Проверьте, что все таблицы созданы:
    - users

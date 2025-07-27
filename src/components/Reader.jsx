@@ -157,6 +157,7 @@ export const Reader = ({ userKey, onLogout }) => {
             isLiked={isLiked}
             swipeHandlers={swipeHandlers}
             userKey={userKey}
+            onToggleLike={() => toggleLike(currentFragmentId)}
           />
         </motion.div>
       </AnimatePresence>
