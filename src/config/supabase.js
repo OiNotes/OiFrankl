@@ -2,7 +2,8 @@ import { createClient } from '@supabase/supabase-js';
 
 // Получаем переменные окружения
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Очищаем ключ от возможных лишних символов
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim();
 const useLocalStorage = import.meta.env.VITE_USE_LOCAL_STORAGE === 'true';
 
 // Debug logging for production
