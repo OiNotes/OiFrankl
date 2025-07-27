@@ -102,16 +102,16 @@ export const Reader = ({ userKey, onLogout }) => {
   }, [toggleViewMode, showTapHint]);
 
   const swipeHandlers = useSwipe({
-    onSwipeUp: handleSwipeDown,  // Свайп вверх = предыдущий (как в TikTok)
-    onSwipeDown: handleSwipeUp,  // Свайп вниз = следующий (как в TikTok)
+    onSwipeUp: handleSwipeUp,      // Свайп вверх (вверх пальцем) = следующий (как в TikTok) 
+    onSwipeDown: handleSwipeDown,  // Свайп вниз (вниз пальцем) = предыдущий (как в TikTok)
     onTap: handleTap,
   });
 
   // Клавиатурная навигация
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'ArrowUp') handleSwipeDown();   // Стрелка вверх = предыдущий фрагмент
-      if (e.key === 'ArrowDown') handleSwipeUp();   // Стрелка вниз = следующий фрагмент
+      if (e.key === 'ArrowUp') handleSwipeUp();     // Стрелка вверх = следующий (как TikTok)
+      if (e.key === 'ArrowDown') handleSwipeDown(); // Стрелка вниз = предыдущий (как TikTok)
       if (e.key === ' ') {
         e.preventDefault();
         handleTap();
