@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест Supabase на продакшене</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Тест подключения к Supabase (Продакшен)</h1>
+        
+        <div id="status" class="status info">
+            Инициализация...
+        </div>
+        
+        <div>
+            <h3>Тесты:</h3>
+            <button onclick="testAnonymousAccess()">1. Тест анонимного доступа</button>
+            <button onclick="testUserCreation()">2. Тест создания пользователя</button>
+            <button onclick="testRLSPolicies()">3. Проверка RLS политик</button>
+            <button onclick="testFullFlow()">4. Полный тест (как в приложении)</button>
+        </div>
+        
+        <div>
+            <h3>Результаты:</h3>
+            <pre id="output"></pre>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+        
+        // Используем те же переменные, что в продакшене
+        const SUPABASE_URL = 'https://nfayxrcrzsdxlwpumnwb.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mYXl4cmNyenNkeGx3cHVtbndiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MDkyMDUsImV4cCI6MjA2OTE4NTIwNX0.ThWlkSh69luGZPLg_y9FOzc56qp3tvhHB8lUWhmeKvI';
+        
+        const status = document.getElementById('status');
+        const output = document.getElementById('output');
+        
+        // Создаем клиент
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        window.supabase = supabase;
+        
+        function log(message, data = null, isError = false) {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = isError ? '❌' : '✅';
+            output.textContent += `${prefix} [${timestamp}] ${message}\n`;
+            if (data) {
+                output.textContent += JSON.stringify(data, null, 2) + '\n';
+            }
+            output.textContent += '\n';
+        }
+        
+        // 1. Тест анонимного доступа
+        window.testAnonymousAccess = async function() {
+            log('🔍 Тест анонимного доступа к таблицам...');
+            
+            try {
+                // Проверяем доступ к users
+                const { data: usersData, error: usersError, status: usersStatus } = await supabase
+                    .from('users')
+                    .select('*')
+                    .limit(1);
+                
+                if (usersError) {
+                    log('Ошибка доступа к users:', {
+                        error: usersError,
+                        status: usersStatus,
+                        message: usersError.message,
+                        code: usersError.code
+                    }, true);
+                } else {
+                    log('Доступ к users успешен', { status: usersStatus });
+                }
+                
+                // Проверяем доступ к user_likes
+                const { data: likesData, error: likesError, status: likesStatus } = await supabase
+                    .from('user_likes')
+                    .select('*')
+                    .limit(1);
+                
+                if (likesError) {
+                    log('Ошибка доступа к user_likes:', {
+                        error: likesError,
+                        status: likesStatus
+                    }, true);
+                } else {
+                    log('Доступ к user_likes успешен', { status: likesStatus });
+                }
+                
+                // Проверяем доступ к global_likes
+                const { data: globalData, error: globalError, status: globalStatus } = await supabase
+                    .from('global_likes')
+                    .select('*')
+                    .limit(1);
+                
+                if (globalError) {
+                    log('Ошибка доступа к global_likes:', {
+                        error: globalError,
+                        status: globalStatus
+                    }, true);
+                } else {
+                    log('Доступ к global_likes успешен', { status: globalStatus });
+                }
+                
+            } catch (error) {
+                log('Критическая ошибка:', error, true);
+            }
+        };
+        
+        // 2. Тест создания пользователя
+        window.testUserCreation = async function() {
+            const testKey = 'TEST-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+            log(`🧪 Создаем тестового пользователя ${testKey}...`);
+            
+            try {
+                const { data, error, status } = await supabase
+                    .from('users')
+                    .insert({ user_key: testKey })
+                    .select()
+                    .single();
+                
+                if (error) {
+                    log('Ошибка создания пользователя:', {
+                        error: error,
+                        status: status,
+                        message: error.message,
+                        code: error.code,
+                        details: error.details,
+                        hint: error.hint
+                    }, true);
+                } else {
+                    log('Пользователь создан:', { data, status });
+                    
+                    // Удаляем тестового пользователя
+                    const { error: deleteError } = await supabase
+                        .from('users')
+                        .delete()
+                        .eq('user_key', testKey);
+                    
+                    if (deleteError) {
+                        log('Ошибка удаления:', deleteError, true);
+                    } else {
+                        log('Тестовый пользователь удален');
+                    }
+                }
+            } catch (error) {
+                log('Критическая ошибка:', error, true);
+            }
+        };
+        
+        // 3. Проверка RLS политик
+        window.testRLSPolicies = async function() {
+            log('🔐 Проверка RLS политик...');
+            
+            try {
+                // Пытаемся прочитать без авторизации
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('*');
+                
+                if (error) {
+                    log('RLS блокирует чтение users:', error, true);
+                } else {
+                    log(`RLS разрешает чтение users: найдено ${data.length} записей`);
+                }
+                
+                // Проверяем вставку
+                const testKey = 'RLS-TEST-' + Date.now();
+                const { error: insertError } = await supabase
+                    .from('users')
+                    .insert({ user_key: testKey });
+                
+                if (insertError) {
+                    log('RLS блокирует вставку в users:', insertError, true);
+                } else {
+                    log('RLS разрешает вставку в users');
+                    
+                    // Очистка
+                    await supabase.from('users').delete().eq('user_key', testKey);
+                }
+                
+            } catch (error) {
+                log('Критическая ошибка:', error, true);
+            }
+        };
+        
+        // 4. Полный тест как в приложении
+        window.testFullFlow = async function() {
+            log('🚀 Полный тест как в приложении...');
+            
+            const userKey = 'FRNK-TEST';
+            
+            try {
+                // 1. Проверяем существующего пользователя
+                log('Шаг 1: Проверка существующего пользователя...');
+                const { data: existingUser, error: selectError } = await supabase
+                    .from('users')
+                    .select('id')
+                    .eq('user_key', userKey)
+                    .single();
+                
+                if (selectError && selectError.code !== 'PGRST116') {
+                    log('Ошибка при проверке:', {
+                        error: selectError,
+                        code: selectError.code,
+                        message: selectError.message,
+                        details: selectError.details,
+                        hint: selectError.hint
+                    }, true);
+                    return;
+                }
+                
+                if (existingUser) {
+                    log('Пользователь найден:', existingUser);
+                } else {
+                    log('Пользователь не найден, создаем...');
+                    
+                    // 2. Создаем нового пользователя
+                    const { data: newUser, error: insertError } = await supabase
+                        .from('users')
+                        .insert({ user_key: userKey })
+                        .select('id')
+                        .single();
+                    
+                    if (insertError) {
+                        log('Ошибка создания:', insertError, true);
+                    } else {
+                        log('Пользователь создан:', newUser);
+                    }
+                }
+                
+            } catch (error) {
+                log('Критическая ошибка:', error, true);
+            }
+        };
+        
+        // Инициализация
+        status.className = 'status success';
+        status.textContent = '✅ Страница загружена. Выберите тест для запуска.';
+        
+        // Автоматически запускаем первый тест
+        testAnonymousAccess();
+    </script>
+</body>
+</html>

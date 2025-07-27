@@ -41,6 +41,21 @@ export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
+// Тестовый запрос для проверки подключения
+if (supabase && import.meta.env.PROD) {
+  console.log('[Supabase] Testing connection...');
+  supabase
+    .from('users')
+    .select('count', { count: 'exact', head: true })
+    .then(({ count, error }) => {
+      if (error) {
+        console.error('[Supabase] Connection test failed:', error);
+      } else {
+        console.log('[Supabase] Connection test successful! Users count:', count);
+      }
+    });
+}
+
 // Флаг для проверки в компонентах
 export const useSupabase = isSupabaseConfigured;
 
@@ -55,11 +70,19 @@ export const migrateUserToSupabase = async (userKey) => {
   
   try {
     // Проверяем, существует ли пользователь
-    const { data: existingUser, error: selectError } = await supabase
+    console.log('[migrateUserToSupabase] Attempting to select user with key:', userKey);
+    const { data: existingUser, error: selectError, status, statusText } = await supabase
       .from('users')
       .select('id')
       .eq('user_key', userKey)
       .single();
+    
+    console.log('[migrateUserToSupabase] Response:', {
+      status,
+      statusText,
+      data: existingUser,
+      error: selectError
+    });
     
     if (existingUser) {
       console.log('[migrateUserToSupabase] Found existing user:', existingUser.id);
@@ -73,8 +96,12 @@ export const migrateUserToSupabase = async (userKey) => {
         message: selectError.message,
         code: selectError.code,
         details: selectError.details,
-        hint: selectError.hint
+        hint: selectError.hint,
+        status: selectError.status,
+        statusText: selectError.statusText
       });
+      // Детальный вывод для отладки
+      console.error('[migrateUserToSupabase] Full error object:', JSON.stringify(selectError, null, 2));
       throw selectError;
     }
     
