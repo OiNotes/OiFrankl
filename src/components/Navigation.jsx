@@ -88,13 +88,10 @@ export const Navigation = ({ isOpen, onClose, currentIndex, progress, onNavigate
                   const isCurrent = currentChapter?.name === chapter.name;
 
                   return (
-                    <motion.div
+                    <div
                       key={chapter.name}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      className={`border-b border-border-light cursor-pointer hover:bg-gray-50 transition-colors ${
-                        isCurrent ? 'bg-gray-50' : ''
+                      className={`border-b border-border-light cursor-pointer transition-colors ${
+                        isCurrent ? 'bg-accent-warm/5' : 'hover:bg-gray-50'
                       }`}
                       onClick={() => handleChapterClick(chapter)}
                     >
@@ -114,59 +111,39 @@ export const Navigation = ({ isOpen, onClose, currentIndex, progress, onNavigate
                           {progressData.read} из {progressData.total} фрагментов
                         </div>
 
-                        {/* Progress Bar with slider */}
-                        <div className="relative mt-3">
-                          {/* Visual progress bar */}
-                          <div className="h-2 bg-gray-200 rounded-full overflow-hidden mb-2">
-                            <motion.div
-                              className="h-full bg-text-primary/30"
-                              initial={{ width: 0 }}
-                              animate={{ width: `${progressData.percentage}%` }}
-                              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                        {/* Progress Bar */}
+                        <div className="mt-3">
+                          <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-accent-warm/40 transition-all duration-300"
+                              style={{ width: `${progressData.percentage}%` }}
                             />
                           </div>
                           
-                          {/* Range slider */}
-                          <input
-                            type="range"
-                            min={0}
-                            max={progressData.total - 1}
-                            value={isCurrent ? currentIndex - chapter.startIndex : 0}
-                            onChange={(e) => {
-                              e.stopPropagation();
-                              const newIndex = chapter.startIndex + parseInt(e.target.value);
-                              onNavigate(newIndex);
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                            className="w-full h-2 bg-transparent cursor-pointer appearance-none"
-                            style={{
-                              background: `linear-gradient(to right, rgb(251 146 60 / 0.3) 0%, rgb(251 146 60 / 0.3) ${progressData.percentage}%, rgb(229 231 235) ${progressData.percentage}%, rgb(229 231 235) 100%)`
-                            }}
-                          />
-                          
-                          {/* Fragment dots */}
-                          <div className="flex justify-between mt-2">
-                            {Array.from({ length: Math.min(10, progressData.total) }).map((_, i) => {
-                              const fragmentIndex = Math.floor(i * progressData.total / Math.min(10, progressData.total));
-                              const globalIndex = chapter.startIndex + fragmentIndex;
-                              const isActive = currentIndex === globalIndex;
-                              return (
-                                <button
-                                  key={i}
-                                  className={`w-2 h-2 rounded-full transition-all ${
-                                    isActive ? 'bg-accent-warm scale-125' : 'bg-gray-300 hover:bg-gray-400'
-                                  }`}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    onNavigate(globalIndex);
-                                  }}
-                                />
-                              );
-                            })}
-                          </div>
+                          {/* Range slider only for current chapter */}
+                          {isCurrent && (
+                            <div className="mt-3">
+                              <input
+                                type="range"
+                                min={0}
+                                max={progressData.total - 1}
+                                value={currentIndex - chapter.startIndex}
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  const newIndex = chapter.startIndex + parseInt(e.target.value);
+                                  onNavigate(newIndex);
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="w-full cursor-pointer"
+                              />
+                              <div className="text-xs text-text-secondary mt-1 text-center">
+                                Фрагмент {currentIndex - chapter.startIndex + 1} из {progressData.total}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
-                    </motion.div>
+                    </div>
                   );
                 })}
               </div>

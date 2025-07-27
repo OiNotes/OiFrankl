@@ -106,22 +106,19 @@ export const Reader = ({ userKey, onLogout }) => {
 
   const slideVariants = {
     enter: (direction) => ({
-      y: direction > 0 ? '25%' : '-25%',
-      opacity: 0.7,
-      scale: 0.98,
-      filter: 'blur(4px)'
+      y: direction > 0 ? '15%' : '-15%',
+      opacity: 0.4,
+      scale: 0.95
     }),
     center: {
       y: 0,
       opacity: 1,
-      scale: 1,
-      filter: 'blur(0px)'
+      scale: 1
     },
     exit: (direction) => ({
-      y: direction > 0 ? '-20%' : '20%',
-      opacity: 0.3,
-      scale: 0.98,
-      filter: 'blur(3px)'
+      y: direction > 0 ? '-15%' : '15%',
+      opacity: 0.4,
+      scale: 0.95
     }),
   };
 
@@ -141,20 +138,16 @@ export const Reader = ({ userKey, onLogout }) => {
           transition={{
             y: { 
               type: 'tween', 
-              duration: 0.25,
-              ease: [0.25, 0.1, 0.25, 1] // более плавная кривая
+              duration: 0.2,
+              ease: [0.32, 0, 0.67, 0]
             },
             opacity: { 
               duration: 0.15,
-              ease: [0.4, 0, 0.6, 1]
+              ease: [0.4, 0, 0.2, 1]
             },
             scale: {
-              duration: 0.2,
-              ease: [0.25, 0.1, 0.25, 1]
-            },
-            filter: {
-              duration: 0.2,
-              ease: [0.4, 0, 0.6, 1]
+              duration: 0.18,
+              ease: [0.32, 0, 0.67, 0]
             }
           }}
           className="absolute inset-0"
@@ -218,8 +211,13 @@ export const Reader = ({ userKey, onLogout }) => {
 
       {/* Индикатор режима просмотра и ключ */}
       <div className="absolute top-4 left-4">
-        <div className="text-xs text-text-secondary mb-1">
-          {progress.viewMode === 'analogy' ? 'Аналогия' : 'Оригинал'}
+        <div className="flex items-baseline gap-3 mb-1">
+          <div className="text-sm font-medium text-text-primary">
+            Фрагмент {progress.currentIndex + 1} из {contentFull.length}
+          </div>
+          <div className="text-xs text-text-secondary">
+            {progress.viewMode === 'analogy' ? 'Аналогия' : 'Оригинал'}
+          </div>
         </div>
         <button
           onClick={async () => {
