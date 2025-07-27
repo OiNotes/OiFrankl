@@ -1,11 +1,13 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSupabaseProgress } from '../hooks/useSupabaseProgress';
 import { contentFull } from '../data/contentFull';
 
-export const LikedParagraphs = ({ userKey, onClose, onNavigateTo }) => {
-  const { progress } = useSupabaseProgress(userKey);
-  // Используем только те лайки, которые есть в progress.likes (загруженные из Supabase для конкретного пользователя)
-  const likedParagraphs = contentFull.filter(p => progress.likes && progress.likes.includes(p.id));
+export const LikedParagraphs = ({ progress, onClose, onNavigateTo }) => {
+  // Используем только те лайки, которые есть в progress.likes
+  // ВАЖНО: progress.likes содержит индексы + 1 (не id из contentFull, так как там дубликаты)
+  const likedParagraphs = progress.likes?.map(likedIndex => {
+    const paragraph = contentFull[likedIndex - 1]; // -1 так как индексы с 1
+    return paragraph;
+  }).filter(Boolean) || [];
 
   return (
     <motion.div
@@ -40,18 +42,21 @@ export const LikedParagraphs = ({ userKey, onClose, onNavigateTo }) => {
             </div>
           ) : (
             <div className="p-4 space-y-4">
-              {likedParagraphs.map((paragraph, index) => (
-                <motion.div
-                  key={`${paragraph.globalId || paragraph.id}-${index}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="bg-white rounded-lg p-4 shadow-sm border border-border-light cursor-pointer hover:shadow-md transition-shadow"
-                  onClick={() => {
-                    onNavigateTo(contentFull.indexOf(paragraph));
-                    onClose();
-                  }}
-                >
+              {likedParagraphs.map((paragraph, mapIndex) => {
+                // Находим реальный индекс в contentFull
+                const likedIndex = progress.likes[mapIndex] - 1;
+                return (
+                  <motion.div
+                    key={`liked-${likedIndex}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: mapIndex * 0.05 }}
+                    className="bg-white rounded-lg p-4 shadow-sm border border-border-light cursor-pointer hover:shadow-md transition-shadow"
+                    onClick={() => {
+                      onNavigateTo(likedIndex);
+                      onClose();
+                    }}
+                  >
                   {paragraph.chapter && (
                     <p className="text-xs text-text-secondary mb-2 uppercase tracking-wider">
                       {paragraph.chapter}
@@ -63,8 +68,9 @@ export const LikedParagraphs = ({ userKey, onClose, onNavigateTo }) => {
                   <p className="text-accent-purple text-sm italic">
                     {paragraph.analogy}
                   </p>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
             </div>
           )}
         </div>

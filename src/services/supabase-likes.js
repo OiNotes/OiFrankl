@@ -165,7 +165,10 @@ class SupabaseLikesService {
         
         if (error) {
           console.error('[toggleLike] Error deleting like:', error);
-          throw error;
+          // Не выбрасываем ошибку, если это проблема с global_likes
+          if (!error.message.includes('global_likes')) {
+            throw error;
+          }
         }
         console.log(`[toggleLike] Successfully deleted like for fragment ${fragmentId}`);
         
@@ -182,7 +185,10 @@ class SupabaseLikesService {
         
         if (error) {
           console.error('[toggleLike] Error inserting like:', error);
-          throw error;
+          // Не выбрасываем ошибку, если это проблема с global_likes
+          if (!error.message.includes('global_likes')) {
+            throw error;
+          }
         }
         console.log(`[toggleLike] Successfully added like for fragment ${fragmentId}`);
         

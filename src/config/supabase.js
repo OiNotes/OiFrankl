@@ -3,13 +3,18 @@ import { createClient } from '@supabase/supabase-js';
 // Получаем переменные окружения
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const useLocalStorage = import.meta.env.VITE_USE_LOCAL_STORAGE === 'true';
 
-// Проверяем наличие переменных
-const isSupabaseConfigured = supabaseUrl && supabaseAnonKey;
+// Проверяем наличие переменных и режим работы
+const isSupabaseConfigured = !useLocalStorage && supabaseUrl && supabaseAnonKey;
 
-console.log('[Supabase Config] URL:', supabaseUrl ? 'present' : 'missing');
-console.log('[Supabase Config] Anon Key:', supabaseAnonKey ? 'present' : 'missing');
-console.log('[Supabase Config] Configured:', isSupabaseConfigured);
+if (useLocalStorage) {
+  console.log('[Storage] Используется локальное хранилище');
+} else {
+  console.log('[Supabase Config] URL:', supabaseUrl ? 'present' : 'missing');
+  console.log('[Supabase Config] Anon Key:', supabaseAnonKey ? 'present' : 'missing');
+  console.log('[Supabase Config] Configured:', !!isSupabaseConfigured);
+}
 
 // Создаем клиент только если есть конфигурация
 export const supabase = isSupabaseConfigured 
@@ -44,6 +49,12 @@ export const migrateUserToSupabase = async (userKey) => {
     // Если ошибка не "PGRST116" (not found), то это реальная ошибка
     if (selectError && selectError.code !== 'PGRST116') {
       console.error('[migrateUserToSupabase] Error selecting user:', selectError);
+      console.error('[migrateUserToSupabase] Error details:', {
+        message: selectError.message,
+        code: selectError.code,
+        details: selectError.details,
+        hint: selectError.hint
+      });
       throw selectError;
     }
     

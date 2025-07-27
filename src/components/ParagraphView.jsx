@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTextSize } from '../hooks/useTextSize';
-import { useSupabaseGlobalLikes } from '../services/supabase-likes';
+import { useUnifiedLikes } from '../hooks/useUnifiedLikes';
+import { contentFull } from '../data/contentFull';
 
-export const ParagraphView = ({ paragraph, viewMode, isLiked, onToggleLike, swipeHandlers }) => {
+export const ParagraphView = ({ paragraph, viewMode, isLiked, swipeHandlers, userKey }) => {
   const text = viewMode === 'original' ? paragraph.original : paragraph.analogy;
   const { fontSize, lineHeight, isVeryLong, mobileOptimized } = useTextSize(text);
-  // Используем globalId только если он есть и больше 0
-  const validGlobalId = paragraph.globalId && paragraph.globalId > 0 ? paragraph.globalId : null;
-  const { count: globalLikes, isLikedByUser, toggleLike } = useSupabaseGlobalLikes(validGlobalId);
+  // Используем унифицированный хук для лайков
+  // ВАЖНО: используем индекс + 1 как уникальный ID, так как в contentFull есть дубликаты id
+  const fragmentId = contentFull.indexOf(paragraph) + 1;
+  const { count: globalLikes, isLikedByUser, toggleLike } = useUnifiedLikes(fragmentId, userKey);
   const [optimisticLiked, setOptimisticLiked] = useState(isLikedByUser);
   const [optimisticCount, setOptimisticCount] = useState(globalLikes);
 
@@ -20,10 +22,10 @@ export const ParagraphView = ({ paragraph, viewMode, isLiked, onToggleLike, swip
     setOptimisticCount(globalLikes);
     
     // Отладка для проверки глобальных лайков
-    if (validGlobalId) {
-      console.log(`[ParagraphView] Fragment ${paragraph.id} (globalId: ${validGlobalId}): ${globalLikes} likes, isLikedByUser: ${isLikedByUser}`);
+    if (fragmentId && globalLikes > 0) {
+      console.log(`[ParagraphView] Fragment ${fragmentId}: ${globalLikes} likes, isLikedByUser: ${isLikedByUser}`);
     }
-  }, [isLikedByUser, globalLikes, paragraph.id, validGlobalId]);
+  }, [isLikedByUser, globalLikes, paragraph.id, fragmentId]);
   
   const handleLikeClick = async () => {
     // Оптимистичное обновление UI
@@ -37,10 +39,8 @@ export const ParagraphView = ({ paragraph, viewMode, isLiked, onToggleLike, swip
     }
     
     // Реальное обновление
-    if (validGlobalId) {
-      await toggleLike(); // Обновляет глобальные лайки через Supabase
-    }
-    onToggleLike(); // Обновляет локальный список лайков пользователя
+    await toggleLike(); // Обновляет лайки через унифицированный хук
+    // onToggleLike больше не нужен, так как toggleLike уже обновляет все
   };
 
   return (

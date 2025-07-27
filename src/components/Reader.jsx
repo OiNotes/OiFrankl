@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSwipe } from '../hooks/useSwipe';
-import { useSupabaseProgress } from '../hooks/useSupabaseProgress';
+import { useUnifiedProgress } from '../hooks/useUnifiedProgress';
 import { contentFull } from '../data/contentFull';
 import { Progress } from './Progress';
 import { ParagraphView } from './ParagraphView';
@@ -17,7 +17,7 @@ export const Reader = ({ userKey, onLogout }) => {
     toggleViewMode,
     toggleLike,
     syncStatus
-  } = useSupabaseProgress(userKey);
+  } = useUnifiedProgress(userKey);
 
   const [direction, setDirection] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -27,7 +27,9 @@ export const Reader = ({ userKey, onLogout }) => {
   const [copiedKey, setCopiedKey] = useState(false);
 
   const currentParagraph = contentFull[progress.currentIndex];
-  const isLiked = progress.likes.includes(currentParagraph?.id);
+  // Используем индекс как уникальный идентификатор
+  const currentFragmentId = progress.currentIndex + 1;
+  const isLiked = progress.likes.includes(currentFragmentId);
   
   const navigateTo = useCallback((index) => {
     if (index >= 0 && index < contentFull.length && index !== progress.currentIndex) {
@@ -104,8 +106,8 @@ export const Reader = ({ userKey, onLogout }) => {
   // Клавиатурная навигация
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'ArrowUp') handleSwipeDown();
-      if (e.key === 'ArrowDown') handleSwipeUp();
+      if (e.key === 'ArrowUp') handleSwipeUp();     // Стрелка вверх = следующий фрагмент
+      if (e.key === 'ArrowDown') handleSwipeDown(); // Стрелка вниз = предыдущий фрагмент
       if (e.key === ' ') {
         e.preventDefault();
         handleTap();
@@ -153,8 +155,8 @@ export const Reader = ({ userKey, onLogout }) => {
             paragraph={currentParagraph}
             viewMode={progress.viewMode}
             isLiked={isLiked}
-            onToggleLike={() => toggleLike(currentParagraph.id)}
             swipeHandlers={swipeHandlers}
+            userKey={userKey}
           />
         </motion.div>
       </AnimatePresence>
@@ -275,7 +277,7 @@ export const Reader = ({ userKey, onLogout }) => {
       <AnimatePresence>
         {showLiked && (
           <LikedParagraphs
-            userKey={userKey}
+            progress={progress}
             onClose={() => setShowLiked(false)}
             onNavigateTo={navigateTo}
           />

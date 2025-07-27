@@ -35,6 +35,7 @@ export const useSupabaseProgress = (userKey) => {
         
         // Инициализируем хранилище
         await supabaseStorage.init(userKey);
+        console.log('[useSupabaseProgress] supabaseStorage.userId:', supabaseStorage.userId);
         
         // Проверяем, нужна ли миграция
         const needsMigration = await migrationService.checkMigrationNeeded(userKey);
@@ -42,6 +43,8 @@ export const useSupabaseProgress = (userKey) => {
         if (needsMigration && supabaseStorage.userId) {
           console.log('Starting data migration...');
           await migrationService.migrateUserData(userKey, supabaseStorage.userId);
+        } else if (!supabaseStorage.userId) {
+          console.warn('[useSupabaseProgress] No userId - работаем в offline режиме');
         }
         
         // Инициализируем сервис лайков ПОСЛЕ миграции
