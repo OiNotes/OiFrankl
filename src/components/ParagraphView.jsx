@@ -21,10 +21,10 @@ export const ParagraphView = ({ paragraph, viewMode, isLiked, swipeHandlers, use
     setOptimisticLiked(isLikedByUser);
     setOptimisticCount(globalLikes);
     
-    // Отладка для проверки глобальных лайков
-    if (fragmentId && globalLikes > 0) {
-      console.log(`[ParagraphView] Fragment ${fragmentId}: ${globalLikes} likes, isLikedByUser: ${isLikedByUser}`);
-    }
+    // // Отладка для проверки глобальных лайков
+    // if (fragmentId && globalLikes > 0) {
+    //   console.log(`[ParagraphView] Fragment ${fragmentId}: ${globalLikes} likes, isLikedByUser: ${isLikedByUser}`);
+    // }
   }, [isLikedByUser, globalLikes, paragraph.id, fragmentId]);
   
   const handleLikeClick = async () => {

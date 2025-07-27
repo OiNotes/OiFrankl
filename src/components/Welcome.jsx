@@ -115,10 +115,6 @@ export const Welcome = ({ onStart }) => {
             </div>
           </motion.div>
         )}
-
-        <p className="mt-8 text-center text-sm text-text-secondary">
-          Философия смысла в формате историй
-        </p>
       </div>
       
       {/* Bottom section with mascot and telegram */}

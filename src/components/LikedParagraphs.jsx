@@ -1,7 +1,9 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
 import { contentFull } from '../data/contentFull';
 
 export const LikedParagraphs = ({ progress, onClose, onNavigateTo }) => {
+  const [copiedIndex, setCopiedIndex] = useState(null);
   // Используем только те лайки, которые есть в progress.likes
   // ВАЖНО: progress.likes содержит индексы + 1 (не id из contentFull, так как там дубликаты)
   const likedParagraphs = progress.likes?.map(likedIndex => {
@@ -51,10 +53,20 @@ export const LikedParagraphs = ({ progress, onClose, onNavigateTo }) => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: mapIndex * 0.05 }}
-                    className="bg-white rounded-lg p-4 shadow-sm border border-border-light cursor-pointer hover:shadow-md transition-shadow"
+                    className="bg-white rounded-lg p-4 shadow-sm border border-border-light cursor-pointer hover:shadow-md transition-shadow relative"
                     onClick={() => {
-                      onNavigateTo(likedIndex);
-                      onClose();
+                      // Копируем оригинал и аналогию
+                      const textToCopy = `${paragraph.original}\n\n— ${paragraph.analogy}`;
+                      
+                      navigator.clipboard.writeText(textToCopy).then(() => {
+                        setCopiedIndex(likedIndex);
+                        setTimeout(() => setCopiedIndex(null), 2000);
+                        
+                        // Вибрация при копировании
+                        if ('vibrate' in navigator) {
+                          navigator.vibrate(50);
+                        }
+                      });
                     }}
                   >
                   {paragraph.chapter && (
@@ -68,6 +80,20 @@ export const LikedParagraphs = ({ progress, onClose, onNavigateTo }) => {
                   <p className="text-accent-purple text-sm italic">
                     {paragraph.analogy}
                   </p>
+                  
+                  {/* Индикатор копирования */}
+                  <AnimatePresence>
+                    {copiedIndex === likedIndex && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        className="absolute top-2 right-2 bg-text-primary text-bg-primary px-2 py-1 rounded text-xs"
+                      >
+                        Скопировано!
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                   </motion.div>
                 );
               })}

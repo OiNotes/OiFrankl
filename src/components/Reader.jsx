@@ -24,6 +24,7 @@ export const Reader = ({ userKey, onLogout }) => {
   const [showNavigation, setShowNavigation] = useState(false);
   const [showKey, setShowKey] = useState(false);
   const [copiedKey, setCopiedKey] = useState(false);
+  const [showTapHint, setShowTapHint] = useState(true);
 
   const currentParagraph = contentFull[progress.currentIndex];
   // Используем индекс как уникальный идентификатор
@@ -94,19 +95,23 @@ export const Reader = ({ userKey, onLogout }) => {
 
   const handleTap = useCallback(() => {
     toggleViewMode();
-  }, [toggleViewMode]);
+    // Убираем подсказку после первого тапа
+    if (showTapHint) {
+      setShowTapHint(false);
+    }
+  }, [toggleViewMode, showTapHint]);
 
   const swipeHandlers = useSwipe({
-    onSwipeUp: handleSwipeUp,
-    onSwipeDown: handleSwipeDown,
+    onSwipeUp: handleSwipeDown,  // Свайп вверх = предыдущий (как в TikTok)
+    onSwipeDown: handleSwipeUp,  // Свайп вниз = следующий (как в TikTok)
     onTap: handleTap,
   });
 
   // Клавиатурная навигация
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'ArrowUp') handleSwipeUp();     // Стрелка вверх = следующий фрагмент
-      if (e.key === 'ArrowDown') handleSwipeDown(); // Стрелка вниз = предыдущий фрагмент
+      if (e.key === 'ArrowUp') handleSwipeDown();   // Стрелка вверх = предыдущий фрагмент
+      if (e.key === 'ArrowDown') handleSwipeUp();   // Стрелка вниз = следующий фрагмент
       if (e.key === ' ') {
         e.preventDefault();
         handleTap();
@@ -132,6 +137,23 @@ export const Reader = ({ userKey, onLogout }) => {
   return (
     <div className="w-full h-full relative">
       <Progress current={progress.currentIndex + 1} total={contentFull.length} />
+      
+      {/* Подсказка про тап */}
+      <AnimatePresence>
+        {showTapHint && progress.currentIndex === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ delay: 1, duration: 0.4 }}
+            className="absolute top-24 left-0 right-0 z-10 flex justify-center px-8"
+          >
+            <div className="bg-text-primary text-bg-primary px-4 py-2 rounded-full text-sm">
+              👆 Тапните для современной аналогии
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       <AnimatePresence mode="wait">
         <motion.div
