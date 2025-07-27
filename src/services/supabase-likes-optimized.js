@@ -71,7 +71,14 @@ class OptimizedSupabaseLikesService {
           this.likesCache.set(parseInt(fragmentId), count);
         });
         
-        console.log('Loaded like counts for', Object.keys(likeCounts).length, 'fragments');
+        // Для фрагментов без лайков устанавливаем 0
+        for (let i = 1; i <= 500; i++) {
+          if (!this.likesCache.has(i)) {
+            this.likesCache.set(i, 0);
+          }
+        }
+        
+        // console.log('Loaded like counts for', Object.keys(likeCounts).length, 'fragments');
       }
       
       // Уведомляем все компоненты
@@ -178,11 +185,8 @@ class OptimizedSupabaseLikesService {
           .eq('fragment_id', fragmentId);
         
         if (error && !error.message.includes('global_likes')) {
-          // Откатываем изменения
-          this.userLikesCache.add(fragmentId);
-          this.likesCache.set(fragmentId, (this.likesCache.get(fragmentId) || 0) + 1);
-          this.notifyListeners(fragmentId);
-          throw error;
+          console.warn('Error deleting like:', error);
+          // Не откатываем изменения - если лайка нет, то это нормально
         }
       } else {
         // Добавляем лайк
@@ -193,12 +197,15 @@ class OptimizedSupabaseLikesService {
             fragment_id: fragmentId
           });
         
-        if (error && !error.message.includes('global_likes')) {
-          // Откатываем изменения
+        if (error && !error.message.includes('global_likes') && error.code !== '23505') {
+          // Откатываем изменения только для реальных ошибок
+          // 23505 - это дубликат, значит лайк уже есть
           this.userLikesCache.delete(fragmentId);
           this.likesCache.set(fragmentId, Math.max(0, (this.likesCache.get(fragmentId) || 0) - 1));
           this.notifyListeners(fragmentId);
           throw error;
+        } else if (error && error.code === '23505') {
+          // Like already exists - this is ok
         }
       }
       
@@ -288,9 +295,16 @@ export const useSupabaseGlobalLikes = (fragmentId) => {
   });
   
   const mountedRef = useRef(true);
+  const lastFragmentRef = useRef(null);
 
   useEffect(() => {
     mountedRef.current = true;
+    
+    // Если fragmentId не изменился, не делаем ничего
+    if (lastFragmentRef.current === fragmentId) {
+      return;
+    }
+    lastFragmentRef.current = fragmentId;
     
     // Если нет валидного fragmentId, возвращаем пустые данные
     if (!fragmentId || fragmentId <= 0) {

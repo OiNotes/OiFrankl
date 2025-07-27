@@ -8,7 +8,6 @@ import { ParagraphView } from './ParagraphView';
 import { LikedParagraphs } from './LikedParagraphs';
 import { Navigation } from './Navigation';
 import { NavigationTrigger } from './NavigationTrigger';
-import { SyncIndicator } from './SyncIndicator';
 
 export const Reader = ({ userKey, onLogout }) => {
   const {
@@ -132,7 +131,6 @@ export const Reader = ({ userKey, onLogout }) => {
 
   return (
     <div className="w-full h-full relative">
-      <SyncIndicator syncStatus={syncStatus} />
       <Progress current={progress.currentIndex + 1} total={contentFull.length} />
       
       <AnimatePresence mode="wait">
