@@ -5,6 +5,26 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const useLocalStorage = import.meta.env.VITE_USE_LOCAL_STORAGE === 'true';
 
+// Debug logging for production
+console.log('[Supabase Config] Environment Debug:');
+console.log('  Mode:', import.meta.env.MODE);
+console.log('  Is Production:', import.meta.env.PROD);
+console.log('  VITE_SUPABASE_URL:', supabaseUrl ? `${supabaseUrl}` : '❌ NOT SET');
+console.log('  VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? `${supabaseAnonKey.substring(0, 30)}...` : '❌ NOT SET');
+console.log('  VITE_USE_LOCAL_STORAGE:', import.meta.env.VITE_USE_LOCAL_STORAGE || '❌ NOT SET');
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('⚠️ КРИТИЧЕСКАЯ ОШИБКА: Переменные окружения Supabase не установлены!');
+  console.error('📝 Инструкция по исправлению:');
+  console.error('1. Откройте Vercel Dashboard: https://vercel.com/dashboard');
+  console.error('2. Выберите проект → Settings → Environment Variables');
+  console.error('3. Добавьте следующие переменные:');
+  console.error('   - VITE_SUPABASE_URL');
+  console.error('   - VITE_SUPABASE_ANON_KEY');
+  console.error('   - VITE_USE_LOCAL_STORAGE (значение: false)');
+  console.error('4. Передеплойте проект');
+}
+
 // Проверяем наличие переменных и режим работы
 const isSupabaseConfigured = supabaseUrl && supabaseAnonKey && !useLocalStorage;
 
