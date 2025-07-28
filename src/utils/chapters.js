@@ -6,8 +6,6 @@ export const getChapters = () => {
   const chapters = [];
   const chapterMap = new Map();
   
-  // Debug: покажем первые несколько глав
-  console.log('Загруженные главы:', contentFull.slice(0, 5).map(item => item.chapter));
   
   contentFull.forEach((item, index) => {
     if (!chapterMap.has(item.chapter)) {
