@@ -60,7 +60,7 @@ export const Navigation = ({ isOpen, onClose, currentIndex, progress, onNavigate
             <div className="h-full flex flex-col overflow-hidden">
               {/* Header */}
               <div className="flex items-center justify-between p-6 border-b border-border-light">
-                <h2 className="text-lg font-serif text-text-primary">Навигация</h2>
+                <h2 className="text-lg font-serif text-text-primary">Навигация по главам</h2>
                 <button
                   onClick={onClose}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
